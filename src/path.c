@@ -43,10 +43,13 @@ static int normalize(const char *segment, int strip_first, int *idx) {
   if (!strip_first && segment[0] == SY_PATH_SEPARATOR)
     i--;
 
-  if (strncmp(segment + i, "./", 2) == 0)
-    i += 2;
-
-  *idx = i;
+  if (strncmp(segment + i, "./", 2) == 0) {
+    segment = segment + i + 2;
+    c_ln -= 2;
+    *idx = i + 2;
+  } else {
+    *idx = i;
+  }
 
   if (segment[c_ln - 1] == SY_PATH_SEPARATOR) {
     int l = c_ln;
@@ -85,6 +88,7 @@ char *sy_path_join(char *buffer, ...) {
   const char *current = NULL;
   va_start(ap, buffer);
   while ((current = va_arg(ap, char *))) {
+
     c_ln = normalize(current, i++ > 0 ? 1 : 0, &c_idx);
     // Empty string
     if (!c_ln)
@@ -141,6 +145,9 @@ char *sy_path_join_array(char *buffer, const char **paths) {
       memcpy(buffer + ln, current + c_idx, c_ln);
     } else if (strncmp(current + c_idx, "..", 2) == 0) {
       current = resolve(buffer, ln, current + c_idx, &ln, &c_ln);
+      memcpy(buffer + ln, current + c_idx, c_ln);
+    } else if (strncmp(current + c_idx, "./", 2) == 0) {
+      current = resolve(buffer, ln, current + c_idx + 2, &ln, &c_ln);
       memcpy(buffer + ln, current + c_idx, c_ln);
     } else {
       memcpy(ln == 0 ? buffer : buffer + (ln++), "/", 1);
