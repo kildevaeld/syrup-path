@@ -224,6 +224,7 @@ size_t sy_path_ext(const char *path, size_t *idx) {
     return 0;
   }
   const char *p = path + _idx;
+  *idx = -1;
   for (int i = 0; i < len; i++) {
     if (i != 0 && p[i] == '.') {
       *idx = _idx + i;
